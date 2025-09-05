@@ -45,23 +45,17 @@ def launch(
     # Generate SV2 configuration JSON
     sv2_config = _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url)
     
-    # Create SV2 config file artifact
-    config_artifact = plan.render_templates(
-        {
-            "sv2-config.json": struct(
-                template=json.encode(sv2_config),
-                data={},
-            )
-        },
-        name="sv2-config",
-    )
-    
-    # Collect all necessary file artifacts
-    files = {
-        "/data": config_artifact,
+    # For now, we'll pass the config as environment variables and generate it inside the container
+    # This avoids the file artifact complexity
+    env_vars = {
+        "SV2_P2P_DISABLE": "1",
+        "SV2_BIND_ALL": "1",
+        "SV2_CONFIG_JSON": json.encode(sv2_config),
     }
+    env_vars.update(l1_config_env_vars)
     
-    # Add JWT files for each chain
+    # Collect JWT files for each chain
+    files = {}
     for chain_id in sv2_params.chains:
         files["/data/jwt-{}.txt".format(chain_id)] = jwt_file
     
@@ -70,17 +64,11 @@ def launch(
         "http": PortSpec(number=51722, transport_protocol="TCP"),
     }
     
+    # Use environment variable for config instead of file for now
     cmd = [
-        "op-supervisor-v2",
-        "--sv2.config=/data/sv2-config.json",
-        "--log.level={}".format(log_level),
+        "sh", "-c", 
+        "echo '$SV2_CONFIG_JSON' > /tmp/sv2-config.json && op-supervisor-v2 --sv2.config=/tmp/sv2-config.json --log.level={}".format(log_level)
     ] + sv2_params.extra_params
-    
-    env_vars = {
-        "SV2_P2P_DISABLE": "1",
-        "SV2_BIND_ALL": "1",
-    }
-    env_vars.update(l1_config_env_vars)
     
     sv2_service_config = ServiceConfig(
         image=sv2_params.image,
