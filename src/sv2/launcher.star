@@ -54,10 +54,10 @@ def launch(
     }
     env_vars.update(l1_config_env_vars)
     
-    # Collect JWT files for each chain
-    files = {}
-    for chain_id in sv2_params.chains:
-        files["/data/jwt-{}.txt".format(chain_id)] = jwt_file
+    # Mount JWT file (SV2 will use the same JWT for all chains)
+    files = {
+        "/data/jwt.txt": jwt_file,
+    }
     
     # Build SV2 service configuration
     ports = {
@@ -126,8 +126,8 @@ def _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url):
                 "beacon_addr": "http://cl-1-lighthouse-geth:4000",  # Default beacon endpoint
                 "l2_authrpc": "http://op-geth-{}-0:8551".format(network_id),
                 "l2_userrpc": "http://op-geth-{}-0:8545".format(network_id),
-                "jwt_secret": "/data/jwt-{}.txt".format(network_id),
-                "rollup_config": "/data/rollup-{}.json".format(network_id),
+                "jwt_secret": "/data/jwt.txt",  # Single JWT file for all chains
+                "rollup_config": "/tmp/rollup-{}.json".format(network_id),  # Will be generated from env
                 "user_rpc_listen_addr": "0.0.0.0",
                 "user_rpc_port": 0,  # Use path-based routing by default
                 "disable_p2p": True,
