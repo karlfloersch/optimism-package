@@ -37,9 +37,68 @@ def launch(
     Returns:
         SV2 service context
     """
-    plan.print("SV2 launcher called - temporarily disabled for debugging")
-    # Temporarily return None to test basic integration
-    return None
+    plan.print("SV2 launcher called with enabled: {}".format(sv2_params.enabled))
+    
+    if not sv2_params.enabled:
+        return None
+        
+    plan.print("Launching minimal SV2 service for chains: {}".format(sv2_params.chains))
+    
+    # Simple SV2 service without complex file mounting
+    cmd = [
+        "op-supervisor-v2",
+        "--l1.rpc={}".format(l1_rpc_url),
+        "--beacon.addr=http://cl-1-lighthouse-geth:4000",
+        "--l2.authrpc=http://op-geth-2151908-0:8551", 
+        "--l2.userrpc=http://op-geth-2151908-0:8545",
+        "--jwt.secret=/jwt/jwtsecret",
+        "--rollup.config=/rollup/rollup.json",
+        "--log.level={}".format(log_level),
+        "--http.addr=0.0.0.0",
+        "--http.port=51722",
+        "--proxy.opnode",
+        "--p2p.disable",
+        "--bind.all",
+    ] + sv2_params.extra_params
+    
+    # Mount JWT file 
+    files = {
+        "/jwt": jwt_file,
+    }
+    
+    env_vars = {
+        "SV2_P2P_DISABLE": "1",
+        "SV2_BIND_ALL": "1",
+    }
+    env_vars.update(l1_config_env_vars)
+    
+    sv2_service_config = ServiceConfig(
+        image=sv2_params.image,
+        ports={"http": PortSpec(number=51722, transport_protocol="TCP")},
+        files=files,
+        cmd=cmd,
+        env_vars=env_vars,
+        min_cpu=100,
+        max_cpu=1000,
+        min_memory=256,
+        max_memory=2048,
+        tolerations=tolerations,
+        node_selectors=node_selectors,
+    )
+    
+    # Start SV2 service
+    sv2_service = plan.add_service(
+        name="sv2-service",
+        config=sv2_service_config,
+    )
+    
+    plan.print("SV2 service started at {}:{}".format(sv2_service.ip_address, 51722))
+    
+    return struct(
+        service=sv2_service,
+        http_port=51722,
+        chains=sv2_params.chains,
+    )
 
 
 def _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url):
