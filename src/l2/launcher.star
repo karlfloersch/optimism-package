@@ -3,6 +3,7 @@ _el_launcher = import_module("/src/el/launcher.star")
 _da_server_launcher = import_module("/src/da/da-server/launcher.star")
 _op_signer_launcher = import_module("/src/signer/op-signer/launcher.star")
 _rollup_boost_launcher = import_module("/src/mev/rollup-boost/launcher.star")
+_sv2_launcher = import_module("/src/sv2/launcher.star")
 
 _selectors = import_module("./selectors.star")
 _util = import_module("/src/util.star")
@@ -23,7 +24,7 @@ def launch(
     node_selectors,
     observability_helper,
     registry,
-    sv2_context=None,
+    sv2_params=None,
 ):
     network_params = params.network_params
     network_name = network_params.name
@@ -175,6 +176,31 @@ def launch(
             observability_helper=observability_helper,
             log_prefix=participant_log_prefix,
         )
+
+        #
+        # Launch SV2 service if enabled and this chain should be managed by SV2
+        #
+        
+        sv2_context = None
+        if sv2_params and sv2_params.enabled and network_params.network_id in sv2_params.chains:
+            plan.print(
+                "{}: Creating SV2 service for this chain".format(participant_log_prefix)
+            )
+            sv2_context = _sv2_launcher.launch(
+                plan=plan,
+                sv2_params=sv2_params,
+                chains=[params],  # Pass this chain's config
+                jwt_file=jwt_file,
+                deployment_output=deployment_output,
+                l1_config_env_vars=l1_config_env_vars,
+                l1_rpc_url=l1_rpc_url,
+                log_level=log_level,
+                persistent=persistent,
+                tolerations=tolerations,
+                node_selectors=node_selectors,
+                observability_helper=observability_helper,
+                el_context=el.context,  # Pass the actual EL context
+            )
 
         #
         # Launch the CL client or use SV2

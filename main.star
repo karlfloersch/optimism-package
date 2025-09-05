@@ -118,23 +118,8 @@ def run(plan, args={}):
         name="op_jwt_file",
     )
 
-    # Launch SV2 if enabled (it will wait for L2 EL services to be available)
+    # SV2 context will be set by L2 launcher when SV2 is enabled
     sv2_context = None
-    if optimism_args.sv2.enabled:
-        sv2_context = sv2_launcher.launch(
-            plan=plan,
-            sv2_params=optimism_args.sv2,
-            chains=optimism_args.chains,
-            jwt_file=jwt_file,
-            deployment_output=deployment_output,
-            l1_config_env_vars=l1_config_env_vars,
-            l1_rpc_url=l1_rpc_url,
-            log_level=global_log_level,
-            persistent=persistent,
-            tolerations=global_tolerations,
-            node_selectors=global_node_selectors,
-            observability_helper=observability_helper,
-        )
 
     # TODO We need to create the dependency sets before we launch the chains since
     # e.g. op-node now depends on the artifacts to be present
@@ -162,7 +147,7 @@ def run(plan, args={}):
                 plan=plan,
                 params=l2_params,
                 supervisors_params=l2_supervisors_params,
-                sv2_context=sv2_context,
+                sv2_params=optimism_args.sv2,
                 jwt_file=jwt_file,
                 l1_config_env_vars=l1_config_env_vars,
                 deployment_output=deployment_output,
@@ -225,7 +210,7 @@ def run(plan, args={}):
             plan=plan,
             params=l2_params,
             supervisors_params=l2_supervisors_params,
-            sv2_context=sv2_context,
+            sv2_params=optimism_args.sv2,
             jwt_file=jwt_file,
             l1_config_env_vars=l1_config_env_vars,
             deployment_output=deployment_output,

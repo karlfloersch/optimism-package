@@ -20,6 +20,7 @@ def launch(
     tolerations,
     node_selectors,
     observability_helper,
+    el_context=None,
 ):
     """Launch SV2 service that manages multiple chains.
 
@@ -47,13 +48,20 @@ def launch(
 
     plan.print("Launching minimal SV2 service for chains: {}".format(sv2_params.chains))
 
+    # Use EL context to get correct service URLs
+    if not el_context:
+        return None
+        
+    l2_auth_rpc = el_context.rpc_http_url.replace(":8545", ":8551")  # Use auth port
+    l2_user_rpc = el_context.rpc_http_url
+    
     # Build proper SV2 command with rollup config
     cmd = [
         "op-supervisor-v2",
         "--l1.rpc={}".format(l1_rpc_url),
         "--beacon.addr={}".format(l1_config_env_vars["CL_RPC_URL"]),
-                "--l2.authrpc=http://op-el-{}-node0-op-geth:8551".format(sv2_params.chains[0]), 
-        "--l2.userrpc=http://op-el-{}-node0-op-geth:8545".format(sv2_params.chains[0]),
+        "--l2.authrpc={}".format(l2_auth_rpc),
+        "--l2.userrpc={}".format(l2_user_rpc),
         "--jwt.secret={}".format(_ethereum_package_constants.JWT_MOUNT_PATH_ON_CONTAINER),
         "--rollup.config={}/rollup-{}.json".format(
             _ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS,
