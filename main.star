@@ -118,7 +118,7 @@ def run(plan, args={}):
         name="op_jwt_file",
     )
 
-    # Launch SV2 if enabled
+    # Launch SV2 if enabled (it will wait for L2 EL services to be available)
     sv2_context = None
     if optimism_args.sv2.enabled:
         sv2_context = sv2_launcher.launch(

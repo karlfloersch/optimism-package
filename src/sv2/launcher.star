@@ -22,7 +22,7 @@ def launch(
     observability_helper,
 ):
     """Launch SV2 service that manages multiple chains.
-    
+
     Args:
         plan: Kurtosis plan
         sv2_params: SV2 configuration parameters
@@ -36,24 +36,24 @@ def launch(
         tolerations: Kubernetes tolerations
         node_selectors: Kubernetes node selectors
         observability_helper: Observability configuration
-        
+
     Returns:
         SV2 service context
     """
     plan.print("SV2 launcher called with enabled: {}".format(sv2_params.enabled))
-    
+
     if not sv2_params.enabled:
         return None
-        
+
     plan.print("Launching minimal SV2 service for chains: {}".format(sv2_params.chains))
-    
+
     # Build proper SV2 command with rollup config
     cmd = [
         "op-supervisor-v2",
         "--l1.rpc={}".format(l1_rpc_url),
         "--beacon.addr={}".format(l1_config_env_vars["CL_RPC_URL"]),
-        "--l2.authrpc=http://op-geth-{}-0:8551".format(sv2_params.chains[0]), 
-        "--l2.userrpc=http://op-geth-{}-0:8545".format(sv2_params.chains[0]),
+                "--l2.authrpc=http://op-el-{}-node0-op-geth:8551".format(sv2_params.chains[0]), 
+        "--l2.userrpc=http://op-el-{}-node0-op-geth:8545".format(sv2_params.chains[0]),
         "--jwt.secret={}".format(_ethereum_package_constants.JWT_MOUNT_PATH_ON_CONTAINER),
         "--rollup.config={}/rollup-{}.json".format(
             _ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS,
@@ -66,19 +66,19 @@ def launch(
         "--p2p.disable",
         "--bind.all",
     ] + sv2_params.extra_params
-    
+
     # Mount JWT file and rollup config
     files = {
         _ethereum_package_constants.JWT_MOUNTPOINT_ON_CLIENTS: jwt_file,
         _ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS: deployment_output,
     }
-    
+
     env_vars = {
         "SV2_P2P_DISABLE": "1",
         "SV2_BIND_ALL": "1",
     }
     env_vars.update(l1_config_env_vars)
-    
+
     sv2_service_config = ServiceConfig(
         image=sv2_params.image,
         ports={"http": PortSpec(number=51722, transport_protocol="TCP")},
@@ -92,15 +92,15 @@ def launch(
         tolerations=tolerations,
         node_selectors=node_selectors,
     )
-    
+
     # Start SV2 service
     sv2_service = plan.add_service(
         name="sv2-service",
         config=sv2_service_config,
     )
-    
+
     plan.print("SV2 service started at {}:{}".format(sv2_service.ip_address, 51722))
-    
+
     return struct(
         service=sv2_service,
         http_port=51722,
@@ -110,7 +110,7 @@ def launch(
 
 def _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url):
     """Generate SV2 configuration JSON."""
-    
+
     # Find chain configurations for the chains SV2 should manage
     sv2_chains = []
     for chain_config in chains:
@@ -129,7 +129,7 @@ def _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url):
                 "disable_p2p": True,
             }
             sv2_chains.append(chain_cfg)
-    
+
     # Build complete SV2 config
     config = {
         "http_addr": "0.0.0.0",
@@ -142,7 +142,7 @@ def _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url):
         "bind_all": True,
         "chains": sv2_chains,
     }
-    
+
     return config
 
 
@@ -157,9 +157,9 @@ def get_sv2_rollup_rpc_url(sv2_context, chain_id):
     """Get the rollup RPC URL for a chain managed by SV2."""
     if not sv2_context or chain_id not in sv2_context.chains:
         return None
-        
+
     # Return path-based URL for the chain
     return "http://sv2-service:{}/opnode/{}/".format(
-        sv2_context.http_port, 
+        sv2_context.http_port,
         chain_id
     )
