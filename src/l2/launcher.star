@@ -182,11 +182,10 @@ def launch(
         #
         
         sv2_context = None
-        plan.print("DEBUG: sv2_params={}, enabled={}, network_id={}, sv2_chains={}".format(
-            sv2_params is not None, 
+        plan.print("DEBUG: sv2_params exists: {}, enabled: {}, network_id: {}".format(
+            sv2_params is not None,
             sv2_params.enabled if sv2_params else False,
-            network_params.network_id,
-            sv2_params.chains if sv2_params else []
+            network_params.network_id
         ))
         if sv2_params and sv2_params.enabled and network_params.network_id in sv2_params.chains:
             plan.print(
