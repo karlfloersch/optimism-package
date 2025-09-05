@@ -45,9 +45,9 @@ def launch(
     # Generate SV2 configuration JSON
     sv2_config = _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url)
     
-    # Create SV2 config file
-    config_template = plan.render_templates(
-        config={
+    # Create SV2 config file artifact
+    config_artifact = plan.render_templates(
+        {
             "sv2-config.json": struct(
                 template=json.encode(sv2_config),
                 data={},
@@ -58,16 +58,12 @@ def launch(
     
     # Collect all necessary file artifacts
     files = {
-        "/data/sv2-config.json": config_template.files["sv2-config.json"],
+        "/data": config_artifact,
     }
     
     # Add JWT files for each chain
     for chain_id in sv2_params.chains:
         files["/data/jwt-{}.txt".format(chain_id)] = jwt_file
-        
-    # Add rollup config files for each chain (if available)
-    # Note: deployment_output might be a string, so we skip rollup config files for now
-    # They will be mounted by the devnet infrastructure
     
     # Build SV2 service configuration
     ports = {
