@@ -110,7 +110,12 @@ def input_parser(
             enabled=results["faucet"]["enabled"],
             image=results["faucet"]["image"],
         ),
-        sv2=results["sv2"],
+        sv2=struct(
+            enabled=results["sv2"]["enabled"],
+            image=results["sv2"]["image"],
+            chains=results["sv2"]["chains"],
+            extra_params=results["sv2"]["extra_params"],
+        ),
         interop_mon=results["interop_mon"],
         altda_deploy_config=struct(
             use_altda=results["altda_deploy_config"]["use_altda"],
