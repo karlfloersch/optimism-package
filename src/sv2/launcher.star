@@ -37,6 +37,9 @@ def launch(
     Returns:
         SV2 service context
     """
+    plan.print("SV2 launcher called with enabled: {}".format(sv2_params.enabled))
+    plan.print("JWT file type: {}".format(type(jwt_file)))
+    
     if not sv2_params.enabled:
         return None
         
