@@ -2,6 +2,9 @@
 
 _util = import_module("/src/util.star")
 _net = import_module("/src/util/net.star")
+_ethereum_package_constants = import_module(
+    "github.com/ethpandaops/ethereum-package/src/package_io/constants.star"
+)
 
 
 def launch(
@@ -44,16 +47,30 @@ def launch(
         
     plan.print("Launching minimal SV2 service for chains: {}".format(sv2_params.chains))
     
-    # Simple SV2 service - start with minimal config first
-    # TODO: Add rollup config file mounting in next iteration
-    plan.print("Note: Starting SV2 in minimal mode - will need rollup config for full functionality")
+    # Build proper SV2 command with rollup config
     cmd = [
-        "sh", "-c", "echo 'SV2 starting in test mode without rollup config' && sleep 3600"
-    ]
+        "op-supervisor-v2",
+        "--l1.rpc={}".format(l1_rpc_url),
+        "--beacon.addr={}".format(l1_config_env_vars["CL_RPC_URL"]),
+        "--l2.authrpc=http://op-geth-{}-0:8551".format(sv2_params.chains[0]), 
+        "--l2.userrpc=http://op-geth-{}-0:8545".format(sv2_params.chains[0]),
+        "--jwt.secret={}".format(_ethereum_package_constants.JWT_MOUNT_PATH_ON_CONTAINER),
+        "--rollup.config={}/rollup-{}.json".format(
+            _ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS,
+            sv2_params.chains[0]
+        ),
+        "--log.level={}".format(log_level),
+        "--http.addr=0.0.0.0",
+        "--http.port=51722",
+        "--proxy.opnode",
+        "--p2p.disable",
+        "--bind.all",
+    ] + sv2_params.extra_params
     
-    # Mount JWT file 
+    # Mount JWT file and rollup config
     files = {
-        "/jwt": jwt_file,
+        _ethereum_package_constants.JWT_MOUNTPOINT_ON_CLIENTS: jwt_file,
+        _ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS: deployment_output,
     }
     
     env_vars = {
