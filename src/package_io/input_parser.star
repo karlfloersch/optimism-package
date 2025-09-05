@@ -110,6 +110,7 @@ def input_parser(
             enabled=results["faucet"]["enabled"],
             image=results["faucet"]["image"],
         ),
+        sv2=results["sv2"],
         interop_mon=results["interop_mon"],
         altda_deploy_config=struct(
             use_altda=results["altda_deploy_config"]["use_altda"],
@@ -154,6 +155,9 @@ def parse_network_params(plan, registry, input_args):
 
     results["faucet"] = _default_faucet_params(registry)
     results["faucet"].update(input_args.get("faucet", {}))
+
+    results["sv2"] = _default_sv2_params(registry)
+    results["sv2"].update(input_args.get("sv2", {}))
 
     results["interop_mon"] = _interop_mon_input_parser.parse(
         args=input_args.get("interop_mon", {}),
@@ -254,6 +258,15 @@ def _default_faucet_params(registry):
     return {
         "enabled": False,
         "image": registry.get(_registry.OP_FAUCET),
+    }
+
+
+def _default_sv2_params(registry):
+    return {
+        "enabled": False,
+        "image": registry.get(_registry.OP_SUPERVISOR_V2),
+        "chains": [],
+        "extra_params": [],
     }
 
 

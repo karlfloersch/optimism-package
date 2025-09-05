@@ -13,6 +13,7 @@ ROOT_PARAMS = [
     "faucet",
     "interop_mon",
     "test-sequencers",
+    "sv2",
 ]
 
 OBSERVABILITY_PARAMS = [
@@ -27,6 +28,13 @@ OBSERVABILITY_PARAMS = [
 FAUCET_PARAMS = [
     "enabled",
     "image",
+]
+
+SV2_PARAMS = [
+    "enabled",
+    "image",
+    "chains",
+    "extra_params",
 ]
 
 PROMETHEUS_PARAMS = [
@@ -164,6 +172,14 @@ def sanity_check(plan, optimism_config):
             optimism_config["faucet"],
             "faucet",
             FAUCET_PARAMS,
+        )
+
+    if "sv2" in optimism_config:
+        validate_params(
+            plan,
+            optimism_config["sv2"],
+            "sv2",
+            SV2_PARAMS,
         )
 
     if "altda_deploy_config" in optimism_config:

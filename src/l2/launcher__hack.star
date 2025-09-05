@@ -32,6 +32,7 @@ def launch(
     node_selectors,
     observability_helper,
     registry,
+    sv2_context=None,
 ):
     network_params = params.network_params
     network_name = network_params.name

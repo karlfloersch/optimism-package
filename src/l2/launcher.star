@@ -23,6 +23,7 @@ def launch(
     node_selectors,
     observability_helper,
     registry,
+    sv2_context=None,
 ):
     network_params = params.network_params
     network_name = network_params.name
@@ -176,37 +177,58 @@ def launch(
         )
 
         #
-        # Launch the CL client
+        # Launch the CL client or use SV2
         #
 
-        cl_params = participant_params.cl
+        cl = None
+        # Check if this chain is managed by SV2
+        if sv2_context and network_params.network_id in sv2_context.chains:
+            plan.print(
+                "{}: Skipping CL - managed by SV2".format(participant_log_prefix)
+            )
+            # Create a mock CL context that points to SV2's virtual op-node
+            sv2_rollup_rpc = "http://sv2-service:{}/opnode/{}/".format(
+                sv2_context.http_port, 
+                network_params.network_id
+            )
+            cl = struct(
+                context=struct(
+                    rpc_http_url=sv2_rollup_rpc,
+                    rpc_ws_url=sv2_rollup_rpc.replace("http://", "ws://"),
+                    service_name="sv2-service",
+                    ip_address=sv2_context.service.ip_address,
+                    ports={"http": sv2_context.http_port},
+                )
+            )
+        else:
+            cl_params = participant_params.cl
 
-        plan.print(
-            "{}: Launching CL ({})".format(participant_log_prefix, cl_params.type)
-        )
+            plan.print(
+                "{}: Launching CL ({})".format(participant_log_prefix, cl_params.type)
+            )
 
-        cl = _cl_launcher.launch(
-            plan=plan,
-            params=cl_params,
-            network_params=network_params,
-            da_params=params.da_params,
-            supervisors_params=supervisors_params,
-            conductor_params=participant_params.conductor_params,
-            is_sequencer=is_sequencer,
-            el_context=sidecar_and_builders.el_builder.context
-            if sidecar_and_builders and sidecar_and_builders.el_builder
-            else el.context,
-            cl_contexts=cl_contexts,
-            signer_context=signer,
-            jwt_file=jwt_file,
-            deployment_output=deployment_output,
-            l1_config_env_vars=l1_config_env_vars,
-            log_level=log_level,
-            persistent=persistent,
-            tolerations=tolerations,
-            node_selectors=node_selectors,
-            observability_helper=observability_helper,
-        )
+            cl = _cl_launcher.launch(
+                plan=plan,
+                params=cl_params,
+                network_params=network_params,
+                da_params=params.da_params,
+                supervisors_params=supervisors_params,
+                conductor_params=participant_params.conductor_params,
+                is_sequencer=is_sequencer,
+                el_context=sidecar_and_builders.el_builder.context
+                if sidecar_and_builders and sidecar_and_builders.el_builder
+                else el.context,
+                cl_contexts=cl_contexts,
+                signer_context=signer,
+                jwt_file=jwt_file,
+                deployment_output=deployment_output,
+                l1_config_env_vars=l1_config_env_vars,
+                log_level=log_level,
+                persistent=persistent,
+                tolerations=tolerations,
+                node_selectors=node_selectors,
+                observability_helper=observability_helper,
+            )
 
         # Add the EL/CL pair to the list of launched participants
         participants.append(

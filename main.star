@@ -4,6 +4,7 @@ _l2_launcher = import_module("./src/l2/launcher.star")
 _l2_launcher__hack = import_module("./src/l2/launcher__hack.star")
 superchain_launcher = import_module("./src/superchain/launcher.star")
 supervisor_launcher = import_module("./src/supervisor/launcher.star")
+sv2_launcher = import_module("./src/sv2/launcher.star")
 op_challenger_launcher = import_module("./src/challenger/op-challenger/launcher.star")
 op_test_sequencer_launcher = import_module(
     "./src/test-sequencer/op-test-sequencer/launcher.star"
@@ -117,6 +118,24 @@ def run(plan, args={}):
         name="op_jwt_file",
     )
 
+    # Launch SV2 if enabled
+    sv2_context = None
+    if optimism_args.sv2.enabled:
+        sv2_context = sv2_launcher.launch(
+            plan=plan,
+            sv2_params=optimism_args.sv2,
+            chains=optimism_args.chains,
+            jwt_file=jwt_file,
+            deployment_output=deployment_output,
+            l1_config_env_vars=l1_config_env_vars,
+            l1_rpc_url=l1_rpc_url,
+            log_level=global_log_level,
+            persistent=persistent,
+            tolerations=global_tolerations,
+            node_selectors=global_node_selectors,
+            observability_helper=observability_helper,
+        )
+
     # TODO We need to create the dependency sets before we launch the chains since
     # e.g. op-node now depends on the artifacts to be present
     #
@@ -143,6 +162,7 @@ def run(plan, args={}):
                 plan=plan,
                 params=l2_params,
                 supervisors_params=l2_supervisors_params,
+                sv2_context=sv2_context,
                 jwt_file=jwt_file,
                 l1_config_env_vars=l1_config_env_vars,
                 deployment_output=deployment_output,
@@ -205,6 +225,7 @@ def run(plan, args={}):
             plan=plan,
             params=l2_params,
             supervisors_params=l2_supervisors_params,
+            sv2_context=sv2_context,
             jwt_file=jwt_file,
             l1_config_env_vars=l1_config_env_vars,
             deployment_output=deployment_output,
