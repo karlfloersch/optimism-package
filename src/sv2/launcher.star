@@ -37,82 +37,9 @@ def launch(
     Returns:
         SV2 service context
     """
-    plan.print("SV2 launcher called with enabled: {}".format(sv2_params.enabled))
-    plan.print("JWT file type: {}".format(type(jwt_file)))
-    
-    if not sv2_params.enabled:
-        return None
-        
-    plan.print("Launching SV2 service for chains: {}".format(sv2_params.chains))
-    
-    # Generate SV2 configuration JSON
-    sv2_config = _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url)
-    
-    # For now, we'll pass the config as environment variables and generate it inside the container
-    # This avoids the file artifact complexity
-    env_vars = {
-        "SV2_P2P_DISABLE": "1",
-        "SV2_BIND_ALL": "1",
-        "SV2_CONFIG_JSON": json.encode(sv2_config),
-    }
-    env_vars.update(l1_config_env_vars)
-    
-    # Mount JWT file (SV2 will use the same JWT for all chains)
-    files = {
-        "/data/jwt.txt": jwt_file,
-    }
-    
-    # Build SV2 service configuration
-    ports = {
-        "http": PortSpec(number=51722, transport_protocol="TCP"),
-    }
-    
-    # Use environment variable for config instead of file for now
-    cmd = [
-        "sh", "-c", 
-        "echo '$SV2_CONFIG_JSON' > /tmp/sv2-config.json && op-supervisor-v2 --sv2.config=/tmp/sv2-config.json --log.level={}".format(log_level)
-    ] + sv2_params.extra_params
-    
-    sv2_service_config = ServiceConfig(
-        image=sv2_params.image,
-        ports=ports,
-        files=files,
-        cmd=cmd,
-        env_vars=env_vars,
-        min_cpu=100,
-        max_cpu=1000,
-        min_memory=256,
-        max_memory=2048,
-        tolerations=tolerations,
-        node_selectors=node_selectors,
-    )
-    
-    # Start SV2 service
-    sv2_service = plan.add_service(
-        name="sv2-service",
-        config=sv2_service_config,
-    )
-    
-    # Wait for SV2 to be ready
-    plan.wait(
-        service_name="sv2-service",
-        recipe=GetHttpRequestRecipe(
-            port_id="http",
-            endpoint="/v1/sync_status",
-        ),
-        field="code",
-        assertion="==",
-        target_value=200,
-        timeout="180s",
-    )
-    
-    plan.print("SV2 service is ready at {}:{}".format(sv2_service.ip_address, 51722))
-    
-    return struct(
-        service=sv2_service,
-        http_port=51722,
-        chains=sv2_params.chains,
-    )
+    plan.print("SV2 launcher called - temporarily disabled for debugging")
+    # Temporarily return None to test basic integration
+    return None
 
 
 def _generate_sv2_config(plan, sv2_params, chains, l1_rpc_url):
