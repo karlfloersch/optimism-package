@@ -86,6 +86,7 @@ def _parse_instance(supervisor_args, supervisor_name, superchains, registry):
     supervisor_params["ports"] = {
         _net.RPC_PORT_NAME: _net.port(
             number=8545,
+            wait=None,
         )
     }
 

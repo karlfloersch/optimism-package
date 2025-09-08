@@ -13,11 +13,13 @@ UDP_DISCOVERY_PORT_NAME = "udp-discovery"
 #
 # This is useful especially for testing purposes since the assertion library does not work great with PortSpec
 # (or any custom object for that matter)
-def port(number, transport_protocol="TCP", application_protocol="http"):
+# default wait is 15 seconds: https://docs.kurtosis.com/api-reference/starlark-reference/port-spec
+def port(number, transport_protocol="TCP", application_protocol="http", wait="15s"):
     return struct(
         number=number,
         transport_protocol=transport_protocol,
         application_protocol=application_protocol,
+        wait=wait,
     )
 
 
@@ -27,6 +29,7 @@ def port_to_port_spec(port):
         number=port.number,
         transport_protocol=port.transport_protocol,
         application_protocol=port.application_protocol,
+        wait=port.wait,
     )
 
 

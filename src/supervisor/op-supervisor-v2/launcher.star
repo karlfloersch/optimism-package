@@ -76,7 +76,8 @@ def launch(
     for port_spec in sv2_config.ports_per_participant:
         port = sv2_config.ports_per_participant[port_spec]
         # Port names must adhere to the RFC 6335 standard, specifically implementing this regex and be 1-15 characters long: ^[a-z]([-a-z0-9]{0,13}[a-z0-9])?$
-        params.ports["rpc-v2-{}".format(port)] = _net.port(number=int(port))
+        # We don't wait for the port to be available because it's a op-node and it needs the el to be up and running first
+        params.ports["rpc-v2-{}".format(port)] = _net.port(number=int(port), wait=None)
 
     config = _get_config(
         plan=plan,
