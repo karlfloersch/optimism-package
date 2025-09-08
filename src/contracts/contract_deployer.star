@@ -409,6 +409,29 @@ def deploy_contracts(
         run=" && ".join(apply_cmds),
     )
 
+    # Post-process: inject interop2_time into rollup-*.json if interop2 offset was provided
+    for chain in optimism_args.chains:
+        if chain.network_params.interop2_time_offset != None:
+            plan.run_sh(
+                name="inject-interop2-rollup-{0}".format(chain.network_params.network_id),
+                description="Inject interop2_time derived from genesis.l2_time + offset",
+                image=utils.DEPLOYMENT_UTILS_IMAGE,
+                env_vars={
+                    "CHAIN_ID": str(chain.network_params.network_id),
+                    "OFFSET": str(chain.network_params.interop2_time_offset),
+                },
+                store=[
+                    StoreSpec(
+                        src="/network-data",
+                        name="op-deployer-configs",
+                    )
+                ],
+                files={
+                    "/network-data": op_deployer_output.files_artifacts[0],
+                },
+                run='jq ".interop2_time = (.genesis.l2_time + (env.OFFSET|tonumber))" "/network-data/rollup-$CHAIN_ID.json" > "/network-data/rollup-$CHAIN_ID.json.tmp" && mv "/network-data/rollup-$CHAIN_ID.json.tmp" "/network-data/rollup-$CHAIN_ID.json"',
+            )
+
     for chain in optimism_args.chains:
         plan.run_sh(
             name="op-deployer-generate-chainspec",
