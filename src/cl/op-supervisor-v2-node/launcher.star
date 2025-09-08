@@ -60,19 +60,26 @@ def launch(
         participant_key
     ]
     virtual_node_port_id = "rpc-v2-{}".format(virtual_node_rpc_port)
-    beacon_node_identity_recipe = PostHttpRequestRecipe(
-        endpoint="/",
-        content_type="application/json",
-        body='{"jsonrpc":"2.0","method":"opp2p_self","params":[],"id":1}',
-        port_id=virtual_node_port_id,
-        extract={
-            "enr": ".result.ENR",
-            "multiaddr": ".result.addresses[0]",
-            "peer_id": ".result.peerID",
-        },
-    )
-    response = plan.request(
-        recipe=beacon_node_identity_recipe, service_name=supervisor_context.service.name
+
+    # Wait for the supervisor service to be ready by making the HTTP request with assertion
+    response = plan.wait(
+        service_name=supervisor_context.service.name,
+        recipe=PostHttpRequestRecipe(
+            endpoint="/",
+            content_type="application/json",
+            body='{"jsonrpc":"2.0","method":"opp2p_self","params":[],"id":1}',
+            port_id=virtual_node_port_id,
+            extract={
+                "enr": ".result.ENR",
+                "multiaddr": ".result.addresses[0]",
+                "peer_id": ".result.peerID",
+            },
+        ),
+        field="code",
+        assertion="==",
+        target_value=200,
+        timeout="1m",
+        description="Waiting for supervisor service to be ready and respond to identity request",
     )
 
     beacon_node_enr = response["extract.enr"]
