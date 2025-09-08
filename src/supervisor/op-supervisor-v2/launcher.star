@@ -114,7 +114,7 @@ def _get_config(
         "--sv2.config={}".format(DATA_FILE),
         "--http.addr=0.0.0.0",
         "--http.port={0}".format(ports[_net.RPC_PORT_NAME].number),
-        "--sv2.data-dir={}".format(DATA_DIR),
+        #"--sv2.data-dir={}".format(DATA_DIR),
         "--poll.interval=1s",
         "--confirm.depth=15",
         # "--log-level=debug",

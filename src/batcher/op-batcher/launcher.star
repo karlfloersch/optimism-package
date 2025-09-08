@@ -31,17 +31,20 @@ def launch(
     observability_helper,
     da_server_context,
     signer_context,
+    sv2_context,
 ):
     config = get_service_config(
         plan=plan,
         params=params,
         sequencers_params=sequencers_params,
+        network_params=network_params,
         deployment_output=deployment_output,
         l1_config_env_vars=l1_config_env_vars,
         gs_batcher_private_key=gs_batcher_private_key,
         observability_helper=observability_helper,
         da_server_context=da_server_context,
         signer_context=signer_context,
+        sv2_context=sv2_context,
     )
 
     service = plan.add_service(params.service_name, config)
@@ -57,12 +60,14 @@ def get_service_config(
     plan,
     params,
     sequencers_params,
+    network_params,
     deployment_output,
     l1_config_env_vars,
     gs_batcher_private_key,
     observability_helper,
     da_server_context,
     signer_context,
+    sv2_context,
 ):
     ports = _net.ports_to_port_specs(params.ports)
 
@@ -86,13 +91,28 @@ def get_service_config(
         "--rollup-rpc={}".format(
             ",".join(
                 [
-                    _net.service_url(
-                        s.conductor_params.service_name,
-                        s.conductor_params.ports[_net.RPC_PORT_NAME],
-                    )
-                    if s.conductor_params
-                    else _net.service_url(
-                        s.cl.service_name, s.cl.ports[_net.RPC_PORT_NAME]
+                    (
+                        _net.service_url(
+                            s.conductor_params.service_name,
+                            s.conductor_params.ports[_net.RPC_PORT_NAME],
+                        )
+                        if s.conductor_params
+                        else (
+                            _net.service_url(
+                                sv2_context.service.name,
+                                sv2_context.service.ports[
+                                    "rpc-v2-{}".format(
+                                        sv2_context.config_per_network.ports_per_participant[
+                                            "{}-{}".format(network_params.network_id, s.name)
+                                        ]
+                                    )
+                                ],
+                            )
+                            if sv2_context and "op-supervisor-v2-node" in s.cl.service_name
+                            else _net.service_url(
+                                s.cl.service_name, s.cl.ports[_net.RPC_PORT_NAME]
+                            )
+                        )
                     )
                     for s in sequencers_params
                 ]

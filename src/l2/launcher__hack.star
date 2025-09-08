@@ -108,6 +108,7 @@ def launch(
         signer_context=original_launcher_output__hack.signer,
         observability_helper=observability_helper,
         log_prefix=network_log_prefix,
+        sv2_context=sv2_context,
     )
 
     _launch_proposer(
@@ -121,6 +122,7 @@ def launch(
         observability_helper=observability_helper,
         signer_context=original_launcher_output__hack.signer,
         log_prefix=network_log_prefix,
+        sv2_context=sv2_context,
     )
 
     _launch_proxyd_maybe(
@@ -246,6 +248,7 @@ def _launch_batcher(
     observability_helper,
     da_server_context,
     signer_context,
+    sv2_context,
     log_prefix,
 ):
     plan.print("{}: Launching batcher".format(log_prefix))
@@ -261,6 +264,7 @@ def _launch_batcher(
         observability_helper=observability_helper,
         da_server_context=da_server_context,
         signer_context=signer_context,
+        sv2_context=sv2_context,
     )
 
     plan.print("{}: Successfully launched batcher".format(log_prefix))
@@ -277,6 +281,7 @@ def _launch_proposer(
     observability_helper,
     signer_context,
     log_prefix,
+    sv2_context,
 ):
     plan.print(
         "{}: Launching proposer {}".format(log_prefix, proposer_params.service_name)
@@ -303,6 +308,7 @@ def _launch_proposer(
         network_params=network_params,
         signer_context=signer_context,
         observability_helper=observability_helper,
+        sv2_context=sv2_context,
     )
 
     plan.print(

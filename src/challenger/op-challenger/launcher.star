@@ -131,28 +131,20 @@ def get_challenger_config(
         "--l1-beacon={}".format(l1_config_env_vars["CL_RPC_URL"]),
         "--l1-eth-rpc={}".format(l1_config_env_vars["L1_RPC_URL"]),
         "--l2-eth-rpc={}".format(
-            ",".join(
-                [
-                    # TODO: we need to handle multiple participants better
-                    _net.service_url(
-                        l2_params.participants[0].el.service_name,
-                        l2_params.participants[0].el.ports[_net.RPC_PORT_NAME],
-                    )
-                    for l2_params in l2s_params
-                ]
+            # For interop with multiple chains, use the first chain's RPC
+            # TODO: op-challenger should be updated to handle multiple L2 RPCs
+            _net.service_url(
+                l2s_params[0].participants[0].el.service_name,
+                l2s_params[0].participants[0].el.ports[_net.RPC_PORT_NAME],
             )
         ),
         "--private-key={}".format(challenger_key),
         "--rollup-rpc={}".format(
-            ",".join(
-                [
-                    # TODO: we need to handle multiple participants better
-                    _net.service_url(
-                        l2_params.participants[0].cl.service_name,
-                        l2_params.participants[0].cl.ports[_net.RPC_PORT_NAME],
-                    )
-                    for l2_params in l2s_params
-                ]
+            # For interop with multiple chains, use the first chain's rollup RPC
+            # TODO: op-challenger should be updated to handle multiple rollup RPCs
+            _net.service_url(
+                l2s_params[0].participants[0].cl.service_name,
+                l2s_params[0].participants[0].cl.ports[_net.RPC_PORT_NAME],
             )
         ),
     ]

@@ -77,7 +77,6 @@ optimism_package:
     supervisor:
       type: op-supervisor-v2
       superchain: superchain0
-      extra_params: ["--disable.p2p"]
   use_interop: false
 ethereum_package:
   participants:
