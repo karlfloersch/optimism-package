@@ -13,6 +13,7 @@ ROOT_PARAMS = [
     "faucet",
     "interop_mon",
     "test-sequencers",
+    "use_interop",
 ]
 
 OBSERVABILITY_PARAMS = [

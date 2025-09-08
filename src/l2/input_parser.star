@@ -28,6 +28,7 @@ _DEFAULT_NETWORK_PARAMS = {
     "isthmus_time_offset": None,
     "jovian_time_offset": None,
     "interop_time_offset": None,
+    "interop2_time_offset": None,
     "fund_dev_accounts": True,
 }
 

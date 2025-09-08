@@ -90,6 +90,7 @@ def _build_hardfork_schedule(chain):
         ("l2GenesisIsthmusTimeOffset", np.isthmus_time_offset),
         ("l2GenesisJovianTimeOffset", np.jovian_time_offset),
         ("l2GenesisInteropTimeOffset", np.interop_time_offset),
+        ("l2GenesisInterop2TimeOffset", np.interop2_time_offset),
     )
 
     # only include the hardforks that have been activated since
@@ -237,7 +238,7 @@ def _build_deployment_intent(
     ]
 
     intent = {
-        "useInterop": len(optimism_args.superchains) > 0,
+        "useInterop": bool(getattr(optimism_args, "use_interop", False)),
         "l1ContractsLocator": l1_artifacts_locator,
         "l2ContractsLocator": l2_artifacts_locator,
         "superchainRoles": _build_superchain_roles(l2_chain_ids_list[0]),

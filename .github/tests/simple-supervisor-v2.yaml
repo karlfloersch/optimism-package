@@ -23,6 +23,8 @@ optimism_package:
         fjord_time_offset: 0
         granite_time_offset: 0
         holocene_time_offset: 0
+        interop_time_offset: null
+        interop2_time_offset: 15
         fund_dev_accounts: true
       batcher_params:
         extra_params: []
@@ -51,6 +53,8 @@ optimism_package:
         fjord_time_offset: 0
         granite_time_offset: 0
         holocene_time_offset: 0
+        interop_time_offset: null
+        interop2_time_offset: 15
         fund_dev_accounts: true
       batcher_params:
         extra_params: []
@@ -74,6 +78,7 @@ optimism_package:
       type: op-supervisor-v2
       superchain: superchain0
       extra_params: ["--disable.p2p"]
+  use_interop: false
 ethereum_package:
   participants:
     - el_type: geth

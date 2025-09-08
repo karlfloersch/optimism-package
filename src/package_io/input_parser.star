@@ -124,6 +124,7 @@ def input_parser(
         chains=results["chains"],
         challengers=results["challengers"],
         superchains=results["superchains"],
+        use_interop=results["use_interop"],
         supervisors=results["supervisors"],
         test_sequencers=results["test-sequencers"],
         op_contract_deployer_params=struct(
@@ -239,6 +240,8 @@ def parse_network_params(plan, registry, input_args):
     results["global_node_selectors"].update(input_args.get("global_node_selectors", {}))
     results["global_tolerations"] = input_args.get("global_tolerations", [])
     results["persistent"] = input_args.get("persistent", False)
+    # top-level interop toggle (decouples interop from presence of superchains)
+    results["use_interop"] = bool(input_args.get("use_interop", False))
 
     return results
 
@@ -336,6 +339,7 @@ def default_network_params():
         "isthmus_time_offset": None,
         "jovian_time_offset": None,
         "interop_time_offset": None,
+        "interop2_time_offset": None,
         "fund_dev_accounts": True,
     }
 
