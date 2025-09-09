@@ -10,12 +10,6 @@ optimism_package:
           cl:
             type: op-supervisor-v2-node
             image: none
-        node1:
-          el:
-            type: op-geth
-          cl:
-            type: op-supervisor-v2-node
-            image: none
       network_params:
         network: "kurtosis"
         network_id: "2151908"
@@ -35,12 +29,6 @@ optimism_package:
     op-kurtosis1:
       participants:
         node0:
-          el:
-            type: op-geth
-          cl:
-            type: op-supervisor-v2-node
-            image: none
-        node1:
           el:
             type: op-geth
           cl:
