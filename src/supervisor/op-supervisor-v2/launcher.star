@@ -126,6 +126,9 @@ def _get_config(
     env_vars = {
         "SV2_SEQUENCER_ENABLED": "true",
         "SV2_L1_SCOPE": "safe",  # safe/unsafe/finalized
+        # Enable denylist and finality-authorization checks in embedded op-nodes
+        # by pointing them to the local SV2 HTTP server inside the container.
+        "SV2_AUTHORIZATION_URL": "http://127.0.0.1:%d" % ports[_net.RPC_PORT_NAME].number,
     }
 
     # apply customizations
