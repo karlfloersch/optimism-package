@@ -215,6 +215,8 @@ def get_service_config(
                 )
             )
         )
+        cmd.append("--rollup.interopmempoolfiltering")
+        cmd.append("--override.interop=0")
 
     if sequencer_params:
         cmd.append(
